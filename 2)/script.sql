@@ -21,7 +21,7 @@ create table Závada
     "Datum vyreseni"  date,
     "Popis problemu"  varchar(150),
     "Zavaznost"       varchar(10),
-    constraint "Zavaznost" check ("Zavaznost" in ('pojízdné', ))
+    constraint "Zavaznost" check ("Zavaznost" in ('pojízdné'))
 );
 
 create table Jízda
@@ -39,8 +39,8 @@ create table Vozidlo
 
 create table "Servisní technik"
 (
-    "ID_technika"   int primary key,
+    "ID_technika"   int primary key
 );
 
 
-insert into "Jízda" values (666, to_timestamp('03-05-2022 08:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 10:25', 'DD-MM-YYYY HH24:MI'));
+insert into Jízda values (666, to_timestamp('03-05-2022 08:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 10:25', 'DD-MM-YYYY HH24:MI'));
