@@ -1,27 +1,46 @@
 
+drop table Vozidlo;
+drop table Jízda;
+drop table Závada;
+drop table Kontrola;
 
-
-
-DROP TABLE Kontrola;
-
-CREATE TABLE Kontrola
+create table Kontrola
 (
-    Kontrola_ID                     INT PRIMARY KEY, -- primary key column
-    "Typ kontroly"                  VARCHAR(15),
-    CONSTRAINT "Typ kontroly" CHECK ("Typ kontroly" IN ('pravidelná', 'akutní')),
-    "Datum kontroly"                DATE,
-    "Kontrolni zprava"              VARCHAR(200),
-    "Vedouci kontrolni technik"     VARCHAR(30)
-    
-    -- specify more columns here
+    Kontrola_ID                     int primary key,
+    "Typ kontroly"                  varchar(15),
+    constraint "Typ kontroly" check ("Typ kontroly" in ('pravidelná', 'akutní')),
+    "Datum kontroly"                date,
+    "Kontrolni zprava"              varchar(200),
+    "Vedouci kontrolni technik"     varchar(30)
 );
 
-CREATE TABLE Závada
+create table Závada
 (
-    "Zavada_ID"       INT PRIMARY KEY,
-    "Datum vzniku"    DATE,
-    "Datum vyreseni"  DATE,
-    "Popis problemu"  VARCHAR(150),
-    "Zavaznost"       VARCHAR(10),
-    CONSTRAINT "Zavaznost" CHECK ("Zavaznost" IN ('pojízdné', ))
-)
+    "Zavada_ID"       int primary key,
+    "Datum vzniku"    date,
+    "Datum vyreseni"  date,
+    "Popis problemu"  varchar(150),
+    "Zavaznost"       varchar(10),
+    constraint "Zavaznost" check ("Zavaznost" in ('pojízdné', ))
+);
+
+create table Jízda
+(
+    "Jizda_ID"      int primary key,
+    "Zacatek jizdy" timestamp,
+    "Konec jizdy"   timestamp
+);
+
+create table Vozidlo
+(
+    "ID_Vozidla"    int primary key,
+    "Pocet mist"    number(3)
+);
+
+create table "Servisní technik"
+(
+    "ID_technika"   int primary key,
+);
+
+
+insert into "Jízda" values (666, to_timestamp('03-05-2022 08:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 10:25', 'DD-MM-YYYY HH24:MI'));
