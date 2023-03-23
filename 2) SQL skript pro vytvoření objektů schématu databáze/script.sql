@@ -37,6 +37,18 @@ create table Vozidlo
     "Pocet mist"    number(3)
 );
 
+create table Autobus
+(
+    "ID_Vozidla"            int primary key,
+    "Registracni znacka"    varchar(7),
+    CONSTRAINT "Registracni znacka" CHECK (REGEXP_LIKE("Registracni znacka", '^[1-9][a-z][a-z0-9][0-9]{4}$')),
+);
+
+create table "Trolejbus, tramvaj"
+(
+    "ID_Vozidla"    int primary key
+);
+
 create table "Servisní technik"
 (
     "ID_technika"   int primary key
