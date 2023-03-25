@@ -1,4 +1,6 @@
-
+drop table "Servisní technik";
+drop table "Trolejbus, tramvaj";
+drop  table Autobus;
 drop table Vozidlo;
 drop table Jízda;
 drop table Závada;
