@@ -6,9 +6,16 @@ drop table JÍZDY;
 drop table ZAMĚSTNANCI;
 drop table VOZIDLA;
 drop sequence JÍZDY_SEQ;
+drop sequence ZÁVADY_SEQ;
 
 /*sekvence pro automatické číslování jízd, pokud je uživatel nezadá ručně*/
 CREATE SEQUENCE JÍZDY_SEQ
+  START WITH 1
+  INCREMENT BY 1
+  NOMAXVALUE;
+
+/*sekvence pro automatické číslování závad, pokud je uživatel nezadá ručně*/
+CREATE SEQUENCE ZÁVADY_SEQ
   START WITH 1
   INCREMENT BY 1
   NOMAXVALUE;
@@ -48,6 +55,8 @@ create table ZÁVADY
     "Datum vzniku"    date not null,
     "Datum vyreseni"  date,
     "Popis problemu"  varchar(150),
+    FK_ID_Vozidlo     int not null,
+    foreign key (FK_ID_Vozidlo) references VOZIDLA (ID_Vozidlo),
     FK_ID_Jizda       int,
     foreign key (FK_ID_Jizda) references JÍZDY ("ID_Jizda"),
     "Zavaznost"       varchar(10),
@@ -91,28 +100,42 @@ create table "TROLEJBUSY, TRAMVAJE"
 );
 
 ALTER TABLE JÍZDY MODIFY "ID_Jizda" DEFAULT JÍZDY_SEQ.NEXTVAL;
-
+ALTER TABLE ZÁVADY MODIFY "ID_Zavada" DEFAULT ZÁVADY_SEQ.NEXTVAL;
 commit;
+
 insert into VOZIDLA values (55, 7);
-insert into VOZIDLA values (73, 9);
+insert into VOZIDLA values (73, 50);
 insert into VOZIDLA values (3, 88);
 insert into VOZIDLA values (7, 1);
 
+insert into AUTOBUSY values (73, '3J97005');
+
+insert into "TROLEJBUSY, TRAMVAJE" values (55);
+insert into "TROLEJBUSY, TRAMVAJE" values (3);
+
 insert into ZAMĚSTNANCI values (895, 'Jan', 'Mechanicky', 'B', 'V');
-insert into ZAMĚSTNANCI values (654, 'Veronika', 'Nicneumetelova', 'B, D, T', 'R');
+insert into ZAMĚSTNANCI values (654, 'Veronika', 'Nicneumetelova', 'T', 'R');
 insert into ZAMĚSTNANCI values (845, 'Pepa', 'Zly', 'B', 'S');
 
 insert into JÍZDY (FK_ID_Vuz, FK_ID_Zamestnanec, "Zacatek jizdy", "Konec jizdy")
+values (73, 654, to_timestamp('16-11-1414 08:00', 'DD-MM-YYYY HH24:MI'), to_timestamp('06-07-1415 10:35', 'DD-MM-YYYY HH24:MI'));
+insert into JÍZDY (FK_ID_Vuz, FK_ID_Zamestnanec, "Zacatek jizdy", "Konec jizdy")
 values (55, 654, to_timestamp('03-05-2022 08:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 10:25', 'DD-MM-YYYY HH24:MI'));
 insert into JÍZDY (FK_ID_Vuz, FK_ID_Zamestnanec, "Zacatek jizdy", "Konec jizdy")
-values (3, 654, to_timestamp('03-05-2022 09:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 11:25', 'DD-MM-YYYY HH24:MI'));
-insert into JÍZDY values (13, 7, 654, to_timestamp('03-05-2022 13:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 14:15', 'DD-MM-YYYY HH24:MI'));
+values (55, 654, to_timestamp('03-05-2022 09:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 11:25', 'DD-MM-YYYY HH24:MI'));
+insert into JÍZDY (FK_ID_Vuz, FK_ID_Zamestnanec, "Zacatek jizdy", "Konec jizdy")
+values (7, 895, to_timestamp('03-05-2022 13:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 14:15', 'DD-MM-YYYY HH24:MI'));
+insert into JÍZDY (FK_ID_Vuz, FK_ID_Zamestnanec, "Zacatek jizdy", "Konec jizdy")
+values (55, 895, to_timestamp('14-11-2022 9:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('14-1-2022 10:45', 'DD-MM-YYYY HH24:MI'));
 
-insert into "TROLEJBUSY, TRAMVAJE" values (73);
+insert into ZÁVADY ("Datum vzniku", "Datum vyreseni", "Popis problemu", FK_ID_Vozidlo, FK_ID_Jizda, "Zavaznost", FK_ID_Vedouci)
+values (to_timestamp('03-05-2022', 'DD-MM-YYYY'), to_timestamp('05-05-2022', 'DD-MM-YYYY'), 'vrzalo zadni prave kolo', 7,1, 'pojizdne', 895);
+insert into ZÁVADY values (67, to_timestamp('06-07-1415', 'DD-MM-YYYY'), to_timestamp('25-3-1645', 'DD-MM-YYYY'), 'autobus shorel v Kostnici', 73, 1, 'nepojizdne', 895);
+insert into ZÁVADY ("Datum vzniku", "Datum vyreseni", "Popis problemu", FK_ID_Vozidlo, FK_ID_Jizda, "Zavaznost", FK_ID_Vedouci)
+values (to_timestamp('25-08-1944', 'DD-MM-YYYY'), to_timestamp('25-09-1944', 'DD-MM-YYYY'), 'tramvaj trefila letecká puma', 3, null, 'nepojizdne', 654);
+insert into ZÁVADY ("Datum vzniku", "Datum vyreseni", "Popis problemu", FK_ID_Vozidlo, FK_ID_Jizda, "Zavaznost", FK_ID_Vedouci)
+values (to_timestamp('14-11-2022', 'DD-MM-YYYY'), null ,'tramvaj poškodili protestující studenti FSS',55, 4, 'pojizdne', 654);
 
-insert into ZÁVADY values (55, to_timestamp('03-05-2022', 'DD-MM-YYYY'), to_timestamp('05-05-2022', 'DD-MM-YYYY'), 'vrzalo zadni prave kolo', 13, 'pojizdne', 895);
-insert into ZÁVADY values (95, to_timestamp('06-07-1415', 'DD-MM-YYYY'), to_timestamp('25-3-1645', 'DD-MM-YYYY'), 'autobus shorel v kostnici', null, 'nepojizdne', 895);
-
-insert into KONTROLY values (77, 3, 95, 895, null, 'akutni', to_timestamp('07-12-2022', 'DD-MM-YYYY'), 'trolejbus nemel kola, ale vyreseno', '555');
+insert into KONTROLY values (3, 55, 3, 895, null, 'akutni', to_timestamp('07-12-2022', 'DD-MM-YYYY'), 'trolejbus nemel kola, ale vyreseno', 555);
 
 commit;
