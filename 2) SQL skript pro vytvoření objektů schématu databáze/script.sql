@@ -1,108 +1,118 @@
-drop table "Trolejbusy, tramvaje";
-drop table Autobusy;
-drop table Kontroly;
-drop table Závady;
-drop table Jízdy;
+drop table "TROLEJBUSY, TRAMVAJE";
+drop table AUTOBUSY;
+drop table KONTROLY;
+drop table ZÁVADY;
+drop table JÍZDY;
+drop table ZAMĚSTNANCI;
+drop table VOZIDLA;
+drop sequence JÍZDY_SEQ;
 
-drop table Zaměstnanci;
-drop table Vozidla;
+/*sekvence pro automatické číslování jízd, pokud je uživatel nezadá ručně*/
+CREATE SEQUENCE JÍZDY_SEQ
+  START WITH 1
+  INCREMENT BY 1
+  NOMAXVALUE;
 
-create  table Zaměstnanci
+/*specializace je řešená přes atribut "Typ zaměstnance": S - servisní technik, V - vedoucí technik, R - řidič*/
+create  table ZAMĚSTNANCI
 (
-    "Zamestnanec_ID"                int not null primary key,
-    "Jmeno"                         varchar(20),
-    "Prijmeni"                      varchar(30),
+    "ID_Zamestnanec"                int not null primary key,
+    "Jmeno"                         varchar(20) not null,
+    "Prijmeni"                      varchar(30) not null,
     "Typ ridicskeho opravneni"      varchar(10),
     "Typ zamestnance"               varchar(1),
     constraint "Druh zamestnance" check ("Typ zamestnance" in ('S', 'V', 'R'))
 );
 
-
-create table Vozidla
+/*generalizace pro tabulky "AUTOBUSY" a "TROLEJBUSY, TRAMVAJE", primární klíče z této tabulky jsou přejímány do specializací*/
+create table VOZIDLA
 (
-    ID_Vozidla    int not null primary key,
-    "Pocet mist"    number(3)
+    ID_Vozidlo    int not null primary key,
+    "Pocet mist"  number(3)
 );
 
-create table Jízdy
+create table JÍZDY
 (
-    "Jizda_ID"      int not null primary key,
-    FK_Vuz_ID          int,
-    foreign key (FK_Vuz_ID) references Vozidla (ID_Vozidla),
-    FK_Zamestnanec_ID   int,
-    foreign key (FK_Zamestnanec_ID) references  Zaměstnanci ("Zamestnanec_ID"),
-    "Zacatek jizdy" timestamp,
-    "Konec jizdy"   timestamp
+    "ID_Jizda"          int not null primary key,
+    FK_ID_Vuz           int not null,
+    foreign key (FK_ID_Vuz) references VOZIDLA (ID_Vozidlo),
+    FK_ID_Zamestnanec   int not null,
+    foreign key (FK_ID_Zamestnanec) references  ZAMĚSTNANCI ("ID_Zamestnanec"),
+    "Zacatek jizdy"     timestamp,
+    "Konec jizdy"       timestamp
 );
 
-create table Závady
+create table ZÁVADY
 (
-    "Zavada_ID"       int not null primary key ,
-    "Datum vzniku"    date,
+    "ID_Zavada"       int not null primary key,
+    "Datum vzniku"    date not null,
     "Datum vyreseni"  date,
     "Popis problemu"  varchar(150),
-    FK_Jizda_ID       int,
-    foreign key (FK_Jizda_ID) references Jízdy ("Jizda_ID"),
+    FK_ID_Jizda       int,
+    foreign key (FK_ID_Jizda) references JÍZDY ("ID_Jizda"),
     "Zavaznost"       varchar(10),
     constraint "Mira zavaznosti" check ("Zavaznost" in ('pojizdne', 'nepojizdne')),
-    FK_Vedouci_ID     int,
-    foreign key (FK_Vedouci_ID) references  Zaměstnanci("Zamestnanec_ID")
+    FK_ID_Vedouci     int not null,
+    foreign key (FK_ID_Vedouci) references  ZAMĚSTNANCI("ID_Zamestnanec")
 );
 
-create table Kontroly
+create table KONTROLY
 (
-    "Kontrola_ID"                   int not null primary key,
-    FK_Vozidlo_ID                   int not null,
-    foreign key (FK_Vozidlo_ID) references Vozidla (ID_Vozidla),
-    FK_Zavada_ID                    int,
-    foreign key (FK_Zavada_ID) references Závady ("Zavada_ID"),
-    FK_Vedouci_ID                   int not null,
-    foreign key (FK_Vedouci_ID) references Zaměstnanci ("Zamestnanec_ID"),
-    FK_Pracovnik_ID                 int,
-    foreign key (FK_Pracovnik_ID) references Zaměstnanci ("Zamestnanec_ID"),
+    "ID_Kontrola"                   int not null primary key,
+    FK_ID_Vozidlo                   int not null,
+    foreign key (FK_ID_Vozidlo) references VOZIDLA (ID_Vozidlo),
+    FK_ID_Zavada                    int not null,
+    foreign key (FK_ID_Zavada) references ZÁVADY ("ID_Zavada"),
+    FK_ID_Vedouci                   int not null,
+    foreign key (FK_ID_Vedouci) references ZAMĚSTNANCI ("ID_Zamestnanec"),
+    FK_ID_Pracovnik                 int,
+    foreign key (FK_ID_Pracovnik) references ZAMĚSTNANCI ("ID_Zamestnanec"),
     "Typ kontroly"                  varchar(15),
     constraint "Druh kontroly"      check ("Typ kontroly" in ('pravidelna', 'akutni')),
-    "Datum kontroly"                date,
+    "Datum kontroly"                date not null,
     "Kontrolni zprava"              varchar(200),
     "Vedouci kontrolni technik"     varchar(30)
 );
 
-
-create table Autobusy
+/*specializace od VOZIDLA; má navíc atribut registrační značka; hodnoty přejímají primární klíč z VOZIDLA*/
+create table AUTOBUSY
 (
-    "ID_Autobus"            int not null primary key,
+    "ID_Autobus"            int not null,
+    foreign key ("ID_Autobus") references VOZIDLA (ID_Vozidlo),
     "Registracni znacka"    varchar(7),
-    CONSTRAINT "SPZ" CHECK (REGEXP_LIKE("Registracni znacka", '^[1-9][A-Z][A-Z0-9][0-9]{4}$')),
-    FK_Vozidla_ID          int,
-    foreign key (FK_Vozidla_ID) references Vozidla (ID_Vozidla)
+    CONSTRAINT "SPZ" CHECK (REGEXP_LIKE("Registracni znacka", '^[1-9][A-Z][A-Z0-9][0-9]{4}$'))
 );
 
-create table "Trolejbusy, tramvaje"
+/*specializace od VOZIDLA; hodnoty přejímají primární klíč z VOZIDLA*/
+create table "TROLEJBUSY, TRAMVAJE"
 (
-    "ID_Trolej"    int not null primary key,
-    FK_Trolej_ID          int,
-    foreign key (FK_Trolej_ID) references Vozidla (ID_Vozidla)
+    "ID_Trolej"    int not null,
+    foreign key ("ID_Trolej") references VOZIDLA (ID_Vozidlo)
 );
 
+ALTER TABLE JÍZDY MODIFY "ID_Jizda" DEFAULT JÍZDY_SEQ.NEXTVAL;
 
 commit;
-insert into Vozidla values (55, 7);
-insert into Vozidla values (73, 9);
+insert into VOZIDLA values (55, 7);
+insert into VOZIDLA values (73, 9);
+insert into VOZIDLA values (3, 88);
+insert into VOZIDLA values (7, 1);
 
-insert into Zaměstnanci values (895, 'Jan', 'Mechanicky', 'B', 'V');
-insert into Zaměstnanci values (654, 'Veronika', 'Nicneumetelova', 'B, D, T', 'R');
-insert into Zaměstnanci values (845, 'Pepa', 'Zly', 'B', 'S');
+insert into ZAMĚSTNANCI values (895, 'Jan', 'Mechanicky', 'B', 'V');
+insert into ZAMĚSTNANCI values (654, 'Veronika', 'Nicneumetelova', 'B, D, T', 'R');
+insert into ZAMĚSTNANCI values (845, 'Pepa', 'Zly', 'B', 'S');
 
-insert into Jízdy values (13, 55, 654, to_timestamp('03-05-2022 08:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 10:25', 'DD-MM-YYYY HH24:MI'));
+insert into JÍZDY (FK_ID_Vuz, FK_ID_Zamestnanec, "Zacatek jizdy", "Konec jizdy")
+values (55, 654, to_timestamp('03-05-2022 08:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 10:25', 'DD-MM-YYYY HH24:MI'));
+insert into JÍZDY (FK_ID_Vuz, FK_ID_Zamestnanec, "Zacatek jizdy", "Konec jizdy")
+values (3, 654, to_timestamp('03-05-2022 09:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 11:25', 'DD-MM-YYYY HH24:MI'));
+insert into JÍZDY values (13, 7, 654, to_timestamp('03-05-2022 13:55', 'DD-MM-YYYY HH24:MI'), to_timestamp('03-05-2022 14:15', 'DD-MM-YYYY HH24:MI'));
 
-insert into "Trolejbusy, tramvaje" values (73, 73);
+insert into "TROLEJBUSY, TRAMVAJE" values (73);
 
-insert into Vozidla values (3, 888);
-insert into Vozidla values (7, 1);
+insert into ZÁVADY values (55, to_timestamp('03-05-2022', 'DD-MM-YYYY'), to_timestamp('05-05-2022', 'DD-MM-YYYY'), 'vrzalo zadni prave kolo', 13, 'pojizdne', 895);
+insert into ZÁVADY values (95, to_timestamp('06-07-1415', 'DD-MM-YYYY'), to_timestamp('25-3-1645', 'DD-MM-YYYY'), 'autobus shorel v kostnici', null, 'nepojizdne', 895);
 
-insert into Závady values (55, to_timestamp('03-05-2022', 'DD-MM-YYYY'), to_timestamp('05-05-2022', 'DD-MM-YYYY'), 'vrzalo zadni prave kolo', 13, 'pojizdne', 895);
-insert into Závady values (95, to_timestamp('06-07-1415', 'DD-MM-YYYY'), to_timestamp('25-3-1645', 'DD-MM-YYYY'), 'autobus shorel v kostnici', null, 'nepojizdne', 895);
-
-insert into Kontroly values (77, 3, 95, 895, null, 'akutni', to_timestamp('07-12-2022', 'DD-MM-YYYY'), 'trolejbus nemel kola, ale vyreseno', '555');
+insert into KONTROLY values (77, 3, 95, 895, null, 'akutni', to_timestamp('07-12-2022', 'DD-MM-YYYY'), 'trolejbus nemel kola, ale vyreseno', '555');
 
 commit;
