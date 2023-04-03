@@ -140,7 +140,7 @@ insert into KONTROLY values (3, 55, 3, 895, null, 'akutni', to_timestamp('07-12-
 
 commit;
 
-/**
+/*
   Konkrétně musí tento skript obsahovat alespoň dva dotazy využívající spojení dvou tabulek, jeden využívající spojení tří tabulek, dva dotazy s klauzulí GROUP BY
   a agregační funkcí, jeden dotaz obsahující predikát EXISTS a jeden dotaz s predikátem IN s vnořeným selectem (nikoliv IN s množinou konstantních dat),
   tj. celkem minimálně 7 dotazů. U každého z dotazů musí být (v komentáři SQL kódu) popsáno srozumitelně, jaká data hledá daný dotaz (jaká je jeho funkce v aplikaci).
@@ -149,7 +149,7 @@ commit;
 
 /* Spojeni dvou tabulek 2x */
 
-
+select "Pocet mist" from JÍZDY natural join VOZIDLA where "Zacatek jizdy" = '16-11-1415 08:00';
 
 /* Spojeni 3 tabulek */
 
