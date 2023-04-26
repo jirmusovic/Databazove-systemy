@@ -8,8 +8,9 @@ drop table VOZIDLA;
 drop sequence JÍZDY_SEQ;
 drop sequence ZÁVADY_SEQ;
 
-GRANT ALL PRIVILEGES ON ALL_ALL_TABLES TO xjirmu00;
-GRANT ALL PRIVILEGES ON ALL_ALL_TABLES TO xnecha04;
+GRANT ALL PRIVILEGES ON ALL_ALL_TABLES TO XJIRMU00;
+
+
 
 /*sekvence pro automatické číslování jízd, pokud je uživatel nezadá ručně*/
 CREATE SEQUENCE JÍZDY_SEQ
@@ -38,7 +39,9 @@ create  table ZAMĚSTNANCI
 create table VOZIDLA
 (
     ID_Vozidlo    int not null primary key,
-    "Pocet mist"  number(3)
+    "Pocet mist"  number(3),
+    "Pojizdnost"  varchar(10)
+    constraint "Pojizdnost vozidla"      check ("Pojizdnost" in ('pojizdne', 'nepojizdne'))
 );
 
 create table JÍZDY
@@ -103,13 +106,27 @@ create table "TROLEJBUSY, TRAMVAJE"
 
 ALTER TABLE JÍZDY MODIFY "ID_Jizda" DEFAULT JÍZDY_SEQ.NEXTVAL;
 ALTER TABLE ZÁVADY MODIFY "ID_Zavada" DEFAULT ZÁVADY_SEQ.NEXTVAL;
+
+
+CREATE OR REPLACE TRIGGER Nepojizdnost_on_update
+AFTER UPDATE OR INSERT ON ZÁVADY
+FOR EACH ROW
+BEGIN
+    UPDATE VOZIDLA SET "Pojizdnost" =  :NEW."Zavaznost"
+    WHERE VOZIDLA.ID_Vozidlo = :NEW.FK_ID_Vozidlo;
+END;
+
+
+
+
+
 commit;
 
-insert into VOZIDLA values (55, 7);
-insert into VOZIDLA values (73, 50);
-insert into VOZIDLA values (3, 88);
-insert into VOZIDLA values (7, 1);
-insert into VOZIDLA values (14, 20);
+insert into VOZIDLA values (55, 7, 'pojizdne');
+insert into VOZIDLA values (73, 50, 'pojizdne');
+insert into VOZIDLA values (3, 88, 'pojizdne');
+insert into VOZIDLA values (7, 1, 'pojizdne');
+insert into VOZIDLA values (14, 20, 'pojizdne');
 
 insert into AUTOBUSY values (73, '3J97005');
 insert into AUTOBUSY values (14, '8A50071');
@@ -183,3 +200,7 @@ select ID_Vozidlo from VOZIDLA V where exists(select * from ZÁVADY Z where Z.FK
 /* In + vnoreny select = vypis zamestnancu s poctem jizd, ktere maji nejaky zaznam o jizde*/
 
 select "Jmeno", "Prijmeni", count("ID_Zamestnanec") as pocet_jizd from ZAMĚSTNANCI where "ID_Zamestnanec" in (select "ID_Zamestnanec" from JÍZDY where FK_ID_Zamestnanec="ID_Zamestnanec") group by "Jmeno", "Prijmeni";
+
+
+
+
