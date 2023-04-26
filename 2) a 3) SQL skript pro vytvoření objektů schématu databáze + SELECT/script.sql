@@ -9,6 +9,7 @@ drop sequence JÍZDY_SEQ;
 drop sequence ZÁVADY_SEQ;
 
 GRANT ALL PRIVILEGES ON ALL_ALL_TABLES TO xjirmu00;
+GRANT ALL PRIVILEGES ON ALL_ALL_TABLES TO xnecha04;
 
 /*sekvence pro automatické číslování jízd, pokud je uživatel nezadá ručně*/
 CREATE SEQUENCE JÍZDY_SEQ
