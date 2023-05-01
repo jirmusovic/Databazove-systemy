@@ -1,4 +1,4 @@
-# ids
+# IDS
 
 # Popis projektu <br>
 Cílem řešeného projektu je návrh a implementace relační databáze na zvolené téma. Projekt se řeší ve dvoučlenných týmech. Je možné pokračovat na projektu z předmětu IUS. Pokud se studenti rozhodnou v projektu z IUS nepokračovat, pak si příslušné téma dvojice vybere ze seznamu témat.
