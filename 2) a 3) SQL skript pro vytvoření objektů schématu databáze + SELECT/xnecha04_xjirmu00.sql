@@ -279,6 +279,8 @@ REFRESH on COMMIT
 AS
 SELECT "Datum vzniku", "Datum vyreseni", "Popis problemu", "Jmeno", "Prijmeni" FROM ZÁVADY join ZAMĚSTNANCI Z on Z."ID_Zamestnanec" = ZÁVADY.FK_ID_Vedouci;
 
+GRANT select on zavady_pro_inspekci to XJIRMU00;
+
 commit;
 
 /* Spojeni dvou tabulek 2x */
