@@ -107,7 +107,7 @@ create table "TROLEJBUSY, TRAMVAJE"
 ALTER TABLE JÍZDY MODIFY "ID_Jizda" DEFAULT JÍZDY_SEQ.NEXTVAL;
 ALTER TABLE ZÁVADY MODIFY "ID_Zavada" DEFAULT ZÁVADY_SEQ.NEXTVAL;
 
-
+/* kursor pro prochazeni a zmenu ridice*/
 CREATE OR REPLACE PROCEDURE zmena_ridicu AS
   -- Nastaveni cursoru na zamestnance kteri maji nejake ridicske opravneni
   CURSOR driver_cursor IS
@@ -154,7 +154,7 @@ BEGIN
     zmena_ridicu();
 end;
 
-
+/* trigger 1 - pri aktualizaci nebo vlozeni ZAVADY se zmeni stav pojizdnosti v tabulce VOZIDLA*/
 CREATE OR REPLACE TRIGGER Nepojizdnost_on_update
 AFTER UPDATE OR INSERT ON ZÁVADY
 FOR EACH ROW
@@ -163,6 +163,7 @@ BEGIN
     WHERE VOZIDLA.ID_Vozidlo = :NEW.FK_ID_Vozidlo;
 END;
 
+/*trigger 2 - pri aktualizaci "Datumu vyreseni" se zmeni stav v tabulce VOZIDLO na "pojizdne" */
 CREATE OR REPLACE TRIGGER Opravene_vozidlo_on_update
 AFTER UPDATE OF "Datum vyreseni" ON ZÁVADY
 FOR EACH ROW
@@ -171,12 +172,11 @@ BEGIN
     WHERE VOZIDLA.ID_Vozidlo = :NEW.FK_ID_Vozidlo;
 END;
 
+/* index pro kategorizaci velkych a malych vozidel */
 CREATE INDEX VELKE_VOZIDLA
     ON VOZIDLA("Pocet mist");
 
-CREATE INDEX IDX_JMENA
-    ON ZAMĚSTNANCI("Jmeno", "Prijmeni");
-
+/* index spojujici vedouciho s kontrolou pro rychlejsi vyhledavani - pouzito v EXPLAIN PLAN*/
 CREATE INDEX IDX_Vedouci_kontroly ON KONTROLY (FK_ID_Vozidlo, FK_ID_Vedouci);
 
 commit;
@@ -269,16 +269,15 @@ insert into KONTROLY values (14, 15, null, 895, null, 'pravidelna', to_timestamp
 insert into KONTROLY values (15, 10, null, 895, null, 'pravidelna', to_timestamp('18-03-2022', 'DD-MM-YYYY'), '');
 insert into KONTROLY values (16, 11, null, 904, null, 'pravidelna', to_timestamp('19-02-2022', 'DD-MM-YYYY'), '');
 
-
+/* nastaveni prav pro xjirmu00 pro tabulky zavad a zamestnancu - simulace inspekce */
 GRANT ALL PRIVILEGES ON ZÁVADY TO XJIRMU00;
 GRANT ALL PRIVILEGES ON ZAMĚSTNANCI TO XJIRMU00;
 
-
+/* vytvoreni materializovaneho pohledu jako inspekce */
 CREATE MATERIALIZED VIEW zavady_pro_inspekci
 REFRESH on COMMIT
 AS
 SELECT "Datum vzniku", "Datum vyreseni", "Popis problemu", "Jmeno", "Prijmeni" FROM ZÁVADY join ZAMĚSTNANCI Z on Z."ID_Zamestnanec" = ZÁVADY.FK_ID_Vedouci;
-
 
 commit;
 
@@ -314,12 +313,12 @@ select "Jmeno", "Prijmeni", count("ID_Zamestnanec") as pocet_jizd from ZAMĚSTNA
 select "Registracni znacka", "Pocet mist" from VOZIDLA V natural join AUTOBUSY A where V.ID_Vozidlo = A."ID_Autobus" and "Pocet mist" >= 20;
 
 
-/* explain plan prvotni - `jmeno` udelal pocet kontrol na autobusech*/
+/* EXPLAIN PLAN - `jmeno` udelal pocet kontrol na autobusech*/
 select "Prijmeni", COUNT("ID_Kontrola") as pocet_kontrol from AUTOBUSY A join VOZIDLA V on V.ID_Vozidlo = A."ID_Autobus" join KONTROLY K on V.ID_Vozidlo = K.FK_ID_Vozidlo join ZAMĚSTNANCI Z on Z."ID_Zamestnanec" = K.FK_ID_Vedouci and Z."ID_Zamestnanec" = K.FK_ID_Vedouci group by "Jmeno", "Prijmeni";
-/* pridanim indexu spojujiciho jmeno vedouciho a id kontroly bylo dosazeno optimalizace */
+/* pridanim indexu IDX_Vedouci_kontroly spojujiciho jmeno vedouciho a id kontroly bylo dosazeno optimalizace */
 
 
-/* rozdeleni vozidel na MALE a VELKE */
+/* rozdeleni vozidel na MALE a VELKE podle poctu mist*/
 WITH velikost_vozidel AS (
   SELECT ID_Vozidlo, "Pocet mist"
   FROM VOZIDLA
